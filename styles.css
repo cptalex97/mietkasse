@@ -1,0 +1,299 @@
+/* ===== Mietkasse — Light-Mode Utility PWA ===== */
+
+@font-face {
+  font-family: "Lexend";
+  src: url("fonts/lexend-latin.woff2") format("woff2");
+  font-weight: 300 800;
+  font-display: swap;
+}
+
+:root {
+  /* Semantische Farb-Tokens */
+  --primary: #1e40af;
+  --primary-strong: #1b3a9c;
+  --on-primary: #ffffff;
+  --accent: #047857;      /* bezahlt / Gewinn-Grün, AA-fest auf Weiß */
+  --accent-soft: #ecfdf5;
+  --danger: #dc2626;
+  --danger-soft: #fef2f2;
+  --warn: #b45309;
+  --warn-soft: #fffbeb;
+
+  --bg: #f4f6fb;
+  --surface: #ffffff;
+  --surface-2: #f8fafc;
+  --text: #0f172a;
+  --text-muted: #64748b;
+  --text-faint: #94a3b8;
+  --border: #e2e8f0;
+  --border-strong: #cbd5e1;
+
+  --radius: 16px;
+  --radius-sm: 11px;
+  --shadow: 0 1px 2px rgba(15, 23, 42, .06), 0 4px 16px rgba(15, 23, 42, .05);
+  --shadow-lg: 0 8px 40px rgba(15, 23, 42, .18);
+
+  --tabbar-h: 64px;
+  --header-h: 56px;
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+
+  --font: "Lexend", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  min-height: 100dvh;
+  padding-top: calc(var(--header-h) + var(--sat));
+  padding-bottom: calc(var(--tabbar-h) + var(--sab));
+}
+
+h1, h2, h3 { font-weight: 700; letter-spacing: -0.02em; margin: 0; }
+button { font-family: inherit; }
+.num { font-variant-numeric: tabular-nums; }
+
+/* ---------- Header ---------- */
+.app-header {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 40;
+  height: calc(var(--header-h) + var(--sat));
+  padding: var(--sat) 12px 0;
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(244, 246, 251, .85);
+  -webkit-backdrop-filter: saturate(180%) blur(12px);
+  backdrop-filter: saturate(180%) blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+.hdr-title { font-size: 1.2rem; flex: 1; text-align: center; }
+.hdr-back, .hdr-action {
+  min-width: 44px; height: 44px; padding: 0 10px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: none; background: transparent; color: var(--primary);
+  font-size: 1rem; font-weight: 600; cursor: pointer; border-radius: 10px;
+}
+.hdr-back svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.hdr-back[hidden], .hdr-action[hidden] { display: none; }
+.hdr-action:active, .hdr-back:active { background: rgba(30,64,175,.1); }
+/* Platzhalter rechts, damit Titel zentriert bleibt, wenn keine Aktion da ist */
+.hdr-spacer { min-width: 44px; }
+
+/* ---------- View ---------- */
+.view { padding: 16px 16px 28px; max-width: 720px; margin: 0 auto; outline: none; }
+.view section { margin-bottom: 22px; }
+.section-label {
+  font-size: .8rem; font-weight: 600; text-transform: uppercase;
+  letter-spacing: .04em; color: var(--text-muted); margin: 0 4px 8px;
+}
+
+/* ---------- Cards ---------- */
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden;
+}
+.card + .card { margin-top: 12px; }
+.card-pad { padding: 16px; }
+
+/* Listenzeilen */
+.row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 16px; min-height: 60px;
+  background: var(--surface); border: none; width: 100%;
+  text-align: left; cursor: pointer; color: inherit;
+  border-bottom: 1px solid var(--border);
+}
+.row:last-child { border-bottom: none; }
+.row:active { background: var(--surface-2); }
+.row-main { flex: 1; min-width: 0; }
+.row-title { font-weight: 600; font-size: 1.02rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row-sub { color: var(--text-muted); font-size: .88rem; margin-top: 2px; }
+.row-end { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.chev { width: 20px; height: 20px; fill: none; stroke: var(--text-faint); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.amount { font-weight: 700; }
+
+/* ---------- Bezahlt/Offen Schalter (Kern-Interaktion) ---------- */
+.pay-row { gap: 12px; }
+.pay-toggle {
+  flex-shrink: 0; min-width: 116px; height: 46px; padding: 0 14px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  border-radius: 999px; border: 1.5px solid var(--border-strong);
+  background: var(--surface-2); color: var(--text-muted);
+  font-weight: 700; font-size: .95rem; cursor: pointer;
+  transition: background .15s ease, color .15s ease, border-color .15s ease, transform .1s ease;
+}
+.pay-toggle svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+.pay-toggle .ico-check { display: none; }
+.pay-toggle.paid {
+  background: var(--accent); border-color: var(--accent); color: #fff;
+}
+.pay-toggle.paid .ico-check { display: block; }
+.pay-toggle.paid .ico-open { display: none; }
+.pay-toggle:active { transform: scale(.96); }
+
+/* ---------- Banner ---------- */
+.banner {
+  display: flex; align-items: center; gap: 12px;
+  padding: 16px; border-radius: var(--radius); margin-bottom: 18px;
+  border: 1px solid; cursor: pointer; box-shadow: var(--shadow);
+}
+.banner svg { width: 26px; height: 26px; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.banner-text { flex: 1; }
+.banner-text strong { display: block; font-size: 1.05rem; }
+.banner-text span { font-size: .9rem; opacity: .9; }
+.banner.warn  { background: var(--warn-soft); border-color: #fcd9a0; color: var(--warn); }
+.banner.ok    { background: var(--accent-soft); border-color: #a7f3d0; color: var(--accent); }
+.banner .chev { stroke: currentColor; opacity: .7; }
+
+/* ---------- Stat-Kacheln ---------- */
+.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 16px; box-shadow: var(--shadow); }
+.stat .k { font-size: .8rem; color: var(--text-muted); font-weight: 600; }
+.stat .v { font-size: 1.5rem; font-weight: 700; margin-top: 2px; letter-spacing: -.02em; }
+.stat.good .v { color: var(--accent); }
+.stat.bad  .v { color: var(--danger); }
+
+/* Fortschrittsbalken */
+.progress { height: 8px; border-radius: 99px; background: var(--border); overflow: hidden; margin-top: 10px; }
+.progress > i { display: block; height: 100%; background: var(--accent); border-radius: 99px; transition: width .3s ease; }
+
+/* ---------- Monatswähler ---------- */
+.month-nav { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 16px; }
+.month-nav button {
+  min-width: 48px; height: 48px; border-radius: 12px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--primary); cursor: pointer; box-shadow: var(--shadow);
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.month-nav button:active { background: var(--surface-2); }
+.month-nav button svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.month-nav .month-label { font-size: 1.15rem; font-weight: 700; text-align: center; flex: 1; }
+.month-nav .today-link { font-size: .78rem; color: var(--text-muted); font-weight: 600; }
+
+/* ---------- Buttons ---------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 50px; padding: 0 20px; width: 100%;
+  border-radius: 14px; border: none; cursor: pointer;
+  font-size: 1.02rem; font-weight: 700; letter-spacing: -.01em;
+  background: var(--primary); color: var(--on-primary);
+  transition: transform .1s ease, background .15s ease;
+}
+.btn:active { transform: scale(.985); background: var(--primary-strong); }
+.btn svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.btn.secondary { background: var(--surface); color: var(--primary); border: 1.5px solid var(--border-strong); box-shadow: var(--shadow); }
+.btn.secondary:active { background: var(--surface-2); }
+.btn.danger { background: var(--danger); }
+.btn.ghost { background: transparent; color: var(--danger); box-shadow: none; min-height: 46px; }
+
+/* ---------- Empty States ---------- */
+.empty { text-align: center; padding: 48px 20px; color: var(--text-muted); }
+.empty svg { width: 56px; height: 56px; fill: none; stroke: var(--border-strong); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; margin-bottom: 14px; }
+.empty h3 { color: var(--text); margin-bottom: 6px; }
+.empty p { margin: 0 0 18px; font-size: .95rem; }
+
+/* ---------- Forms ---------- */
+.field { margin-bottom: 16px; }
+.field label { display: block; font-size: .86rem; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+.field .req { color: var(--danger); }
+.field input, .field textarea {
+  width: 100%; min-height: 50px; padding: 12px 14px;
+  border: 1.5px solid var(--border-strong); border-radius: 12px;
+  background: var(--surface); color: var(--text); font-size: 1.02rem; font-family: inherit;
+}
+.field textarea { min-height: 84px; resize: vertical; line-height: 1.45; }
+.field input:focus, .field textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(30,64,175,.15); }
+.field .hint { font-size: .8rem; color: var(--text-muted); margin-top: 6px; }
+.input-suffix { position: relative; }
+.input-suffix .sfx { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-weight: 600; pointer-events: none; }
+.input-suffix input { padding-right: 34px; }
+
+/* ---------- Modal / Sheet ---------- */
+.modal-scrim {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(15,23,42,.5); display: flex; align-items: flex-end; justify-content: center;
+  animation: fade .18s ease;
+}
+/* UA [hidden]{display:none} hat gleiche Specificity wie .modal-scrim{display:flex} und verliert,
+   da die Klasse später lädt → ohne diese Regel bliebe der Scrim dauerhaft sichtbar. */
+.modal-scrim[hidden] { display: none; }
+.modal {
+  background: var(--surface); width: 100%; max-width: 560px;
+  border-radius: 22px 22px 0 0; padding: 8px 18px calc(20px + var(--sab));
+  max-height: 92dvh; overflow-y: auto; box-shadow: var(--shadow-lg);
+  animation: sheet-up .26s cubic-bezier(.2,.8,.2,1);
+}
+@media (min-width: 600px) { .modal-scrim { align-items: center; } .modal { border-radius: 22px; } }
+.modal .grabber { width: 38px; height: 4px; border-radius: 99px; background: var(--border-strong); margin: 6px auto 14px; }
+.modal h2 { font-size: 1.25rem; margin-bottom: 16px; }
+.modal-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+
+@keyframes fade { from { opacity: 0; } }
+@keyframes sheet-up { from { transform: translateY(100%); } }
+
+/* ---------- Toast ---------- */
+.toast {
+  position: fixed; left: 50%; transform: translateX(-50%);
+  bottom: calc(var(--tabbar-h) + var(--sab) + 14px); z-index: 200;
+  background: #0f172a; color: #fff; padding: 12px 16px; border-radius: 12px;
+  font-size: .94rem; font-weight: 600; box-shadow: var(--shadow-lg);
+  display: flex; align-items: center; gap: 14px; max-width: calc(100% - 32px);
+  animation: toast-in .2s ease;
+}
+.toast[hidden] { display: none; }
+.toast button { background: none; border: none; color: #7dd3fc; font-weight: 700; cursor: pointer; font-size: .94rem; }
+@keyframes toast-in { from { opacity: 0; transform: translate(-50%, 12px); } }
+
+/* ---------- Tab Bar ---------- */
+.tabbar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+  height: calc(var(--tabbar-h) + var(--sab)); padding-bottom: var(--sab);
+  display: flex; background: rgba(255,255,255,.9);
+  -webkit-backdrop-filter: saturate(180%) blur(12px); backdrop-filter: saturate(180%) blur(12px);
+  border-top: 1px solid var(--border);
+}
+.tab {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  text-decoration: none; color: var(--text-faint); font-size: .68rem; font-weight: 600;
+}
+.tab svg { width: 25px; height: 25px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.tab.active { color: var(--primary); }
+
+/* Detail-Kopf (Immobilie) */
+.detail-head { padding: 4px 4px 18px; }
+.detail-head h2 { font-size: 1.5rem; }
+.detail-head p { color: var(--text-muted); margin: 4px 0 0; }
+
+/* Kontakt-Links im Partei-Detail */
+.contact-links { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+.contact-links a {
+  display: inline-flex; align-items: center; gap: 7px; text-decoration: none;
+  padding: 9px 14px; border-radius: 11px; background: var(--surface-2);
+  border: 1px solid var(--border); color: var(--primary); font-weight: 600; font-size: .92rem;
+}
+.contact-links a svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+.note-block { background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; font-size: .94rem; color: var(--text); white-space: pre-wrap; margin-top: 12px; }
+
+.fab-row { margin-top: 14px; }
+
+/* Mehr-Tab Listen */
+.list-link { display: flex; align-items: center; gap: 14px; padding: 16px; }
+.list-link svg.lead { width: 24px; height: 24px; fill: none; stroke: var(--primary); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+.list-link .row-main .row-sub { white-space: normal; }
+
+.muted { color: var(--text-muted); }
+.center { text-align: center; }
+.mt8 { margin-top: 8px; } .mt16 { margin-top: 16px; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+}

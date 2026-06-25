@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Mietkasse</title>
+  <meta name="description" content="Mieteingänge pro Monat abhaken — alles lokal auf dem Gerät." />
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#1e40af" />
+  <link rel="icon" href="icons/icon-192.png" sizes="192x192" type="image/png" />
+
+  <!-- iOS Homescreen-App -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Mietkasse" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+
+  <link rel="preload" href="fonts/lexend-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Kontext-Header -->
+  <header class="app-header" id="appHeader">
+    <button class="hdr-back" id="hdrBack" type="button" aria-label="Zurück" hidden>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <h1 class="hdr-title" id="hdrTitle">Übersicht</h1>
+    <button class="hdr-action" id="hdrAction" type="button" hidden></button>
+  </header>
+
+  <!-- View-Container (von app.js gefüllt) -->
+  <main class="view" id="view" tabindex="-1"></main>
+
+  <!-- Bottom-Tab-Navigation -->
+  <nav class="tabbar" id="tabbar" aria-label="Hauptnavigation">
+    <a class="tab" data-route="uebersicht" href="#/uebersicht">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5L12 4l9 6.5"/><path d="M5 9.5V20h14V9.5"/></svg>
+      <span>Übersicht</span>
+    </a>
+    <a class="tab" data-route="monat" href="#/monat">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/><path d="M9 14l2 2 4-4"/></svg>
+      <span>Monat</span>
+    </a>
+    <a class="tab" data-route="immobilien" href="#/immobilien">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V8l8-5 8 5v12"/><path d="M9 20v-6h6v6"/></svg>
+      <span>Immobilien</span>
+    </a>
+    <a class="tab" data-route="mehr" href="#/mehr">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="6" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="18" r="1.6"/></svg>
+      <span>Mehr</span>
+    </a>
+  </nav>
+
+  <!-- Modal-Layer -->
+  <div class="modal-scrim" id="modalScrim" hidden>
+    <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"></div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
