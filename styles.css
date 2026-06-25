@@ -267,6 +267,14 @@ button { font-family: inherit; }
 .tab svg { width: 25px; height: 25px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .tab.active { color: var(--primary); }
 
+/* Jahres-Ansicht */
+.year-hero .k { font-size: .85rem; color: var(--text-muted); font-weight: 600; }
+.year-hero .v { font-size: 2rem; font-weight: 700; color: var(--accent); letter-spacing: -.02em; line-height: 1.1; margin-top: 2px; }
+.subtotal-row { background: var(--surface-2); }
+.subtotal-row .row-title { color: var(--text-muted); font-weight: 600; font-size: .92rem; }
+.subtotal-row .amount { color: var(--text); }
+.row-end.amount { font-size: 1.02rem; }
+
 /* Detail-Kopf (Immobilie) */
 .detail-head { padding: 4px 4px 18px; }
 .detail-head h2 { font-size: 1.5rem; }

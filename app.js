@@ -74,6 +74,19 @@ function setPayment(monthKey, tenantId, patch) {
   save();
 }
 
+function currentYear() { return new Date().getFullYear(); }
+function yearKeys(y) { return Array.from({ length: 12 }, (_, i) => y + "-" + String(i + 1).padStart(2, "0")); }
+function tenantYearIncome(y, t) {
+  let months = 0, sum = 0; const rent = Number(t.rent) || 0;
+  for (const mk of yearKeys(y)) if (getPayment(mk, t.id).paid) { months++; sum += rent; }
+  return { months, sum };
+}
+function yearStats(y) {
+  let total = 0; const perTenant = [];
+  for (const t of state.tenants) { const r = tenantYearIncome(y, t); total += r.sum; perTenant.push({ t, ...r }); }
+  return { total, perTenant };
+}
+
 function monthStats(monthKey, tenantList) {
   const tenants = tenantList || state.tenants;
   let total = tenants.length, paidCount = 0, sumExpected = 0, sumPaid = 0;
@@ -109,6 +122,7 @@ const ICON = {
   pencil: '<svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>',
   left: '<svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>',
   right: '<svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>',
+  chart: '<svg viewBox="0 0 24 24"><path d="M3 21h18M7 21v-6M12 21V8M17 21v-10"/></svg>',
 };
 
 /* ---------- DOM-Refs ---------- */
@@ -119,6 +133,7 @@ const $hdrAction = document.getElementById("hdrAction");
 const $tabbar = document.getElementById("tabbar");
 
 let monthCursor = currentMonthKey(); // im Speicher gehaltener Monat für die Monatsansicht
+let yearCursor = currentYear();      // gehaltenes Jahr für die Jahresansicht
 
 /* ---------- Header steuern ---------- */
 function setHeader(title, opts = {}) {
@@ -149,6 +164,7 @@ function go(hash) { location.hash = hash; }
 function render() {
   const { route, id } = parseHash();
   const tabRoute = ["immobilie", "partei"].includes(route) ? "immobilien" : route;
+  // (Tab "jahr" ist eigenständig)
   [...$tabbar.querySelectorAll(".tab")].forEach((a) =>
     a.classList.toggle("active", a.dataset.route === tabRoute));
   window.scrollTo(0, 0);
@@ -156,6 +172,7 @@ function render() {
   switch (route) {
     case "uebersicht": return viewUebersicht();
     case "monat": return viewMonat();
+    case "jahr": return viewJahr();
     case "immobilien": return viewImmobilien();
     case "immobilie": return viewPropertyDetail(id);
     case "partei": return viewTenantDetail(id);
@@ -298,6 +315,57 @@ function togglePaid(tenantId) {
 
 window.changeMonth = function (delta) { monthCursor = shiftMonth(monthCursor, delta); viewMonat(); };
 window.jumpToday = function (e) { e.preventDefault(); monthCursor = currentMonthKey(); viewMonat(); };
+
+function viewJahr() {
+  const y = yearCursor;
+  setHeader("Jahr");
+
+  const nav = `<div class="month-nav">
+    <button onclick="changeYear(-1)" aria-label="Vorheriges Jahr">${ICON.left}</button>
+    <div class="month-label">${y}
+      ${y !== currentYear() ? `<div class="today-link"><a href="#" onclick="jumpYear(event)">Zu diesem Jahr</a></div>` : ""}
+    </div>
+    <button onclick="changeYear(1)" aria-label="Nächstes Jahr">${ICON.right}</button>
+  </div>`;
+
+  if (state.tenants.length === 0) {
+    $view.innerHTML = nav + emptyState(ICON.party, "Noch keine Mietparteien",
+      "Lege zuerst Immobilien mit Parteien an, dann erscheinen hier die Jahres-Einnahmen.",
+      `<button class="btn" onclick="go('#/immobilien')">${ICON.plus} Zu den Immobilien</button>`);
+    return;
+  }
+
+  const ys = yearStats(y);
+  const paidMonths = ys.perTenant.reduce((a, r) => a + r.months, 0);
+  const hero = `<section class="card card-pad year-hero">
+    <div class="k">Einnahmen ${y}</div>
+    <div class="v num">${fmtEUR(ys.total)}</div>
+    <div class="muted num" style="font-size:.85rem;margin-top:2px">${paidMonths} ${paidMonths === 1 ? "bezahlter Monat" : "bezahlte Monate"} insgesamt</div>
+  </section>`;
+
+  let groups = "";
+  for (const p of state.properties) {
+    const ts = tenantsOf(p.id);
+    if (!ts.length) continue;
+    let sub = 0;
+    const rows = ts.map((t) => {
+      const r = tenantYearIncome(y, t);
+      sub += r.sum;
+      return `<div class="row">
+        <div class="row-main"><div class="row-title">${esc(t.name)}</div>
+        <div class="row-sub num">${r.months}/12 Monate${t.unit ? " · " + esc(t.unit) : ""}</div></div>
+        <div class="row-end amount num">${fmtEUR(r.sum)}</div></div>`;
+    }).join("");
+    groups += `<section><div class="section-label">${esc(p.name)}</div><div class="card">${rows}
+      <div class="row subtotal-row"><div class="row-main"><div class="row-title">Summe ${esc(p.name)}</div></div>
+      <div class="row-end amount num">${fmtEUR(sub)}</div></div></div></section>`;
+  }
+
+  $view.innerHTML = nav + hero + groups;
+}
+
+window.changeYear = function (delta) { yearCursor += delta; viewJahr(); };
+window.jumpYear = function (e) { e.preventDefault(); yearCursor = currentYear(); viewJahr(); };
 
 function viewImmobilien() {
   setHeader("Immobilien", {
