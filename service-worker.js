@@ -1,5 +1,5 @@
 /* Mietkasse Service Worker — App-Shell-Cache für Offline-Betrieb */
-const CACHE = "mietkasse-v1.0.2";
+const CACHE = "mietkasse-v1.0.3";
 const ASSETS = [
   "./",
   "./index.html",

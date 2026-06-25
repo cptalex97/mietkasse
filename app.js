@@ -336,11 +336,11 @@ function viewJahr() {
   }
 
   const ys = yearStats(y);
-  const paidMonths = ys.perTenant.reduce((a, r) => a + r.months, 0);
+  const paidCount = ys.perTenant.reduce((a, r) => a + r.months, 0);
   const hero = `<section class="card card-pad year-hero">
     <div class="k">Einnahmen ${y}</div>
     <div class="v num">${fmtEUR(ys.total)}</div>
-    <div class="muted num" style="font-size:.85rem;margin-top:2px">${paidMonths} ${paidMonths === 1 ? "bezahlter Monat" : "bezahlte Monate"} insgesamt</div>
+    <div class="muted num" style="font-size:.85rem;margin-top:2px">${paidCount} ${paidCount === 1 ? "eingegangene Zahlung" : "eingegangene Zahlungen"}</div>
   </section>`;
 
   let groups = "";
